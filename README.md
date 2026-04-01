@@ -50,6 +50,8 @@
    ```bash
    npm run dev
    ```
+5. **if not works**:
+   Direct link:https://ai.studio/apps/fdf69f37-2811-4276-b926-fe76359e0fbc
 
 ## 🛡️ Security & Validation
 
