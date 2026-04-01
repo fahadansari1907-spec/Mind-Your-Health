@@ -1,0 +1,43 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user preferences and health data.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The user's unique ID." },
+        "email": { "type": "string", "format": "email", "description": "User's email address." },
+        "displayName": { "type": "string", "description": "User's display name." },
+        "photoURL": { "type": "string", "description": "User's photo URL." },
+        "profile": { "type": "string", "enum": ["none", "diabetes", "hypertension", "gluten-free", "weight-loss"], "description": "User's health profile." },
+        "language": { "type": "string", "enum": ["english", "hindi", "marathi", "tamil", "bengali"], "description": "User's preferred language." },
+        "age": { "type": "string", "description": "User's age." },
+        "weight": { "type": "string", "description": "User's weight." },
+        "activity": { "type": "string", "enum": ["low", "moderate", "high"], "description": "User's activity level." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp." }
+      },
+      "required": ["uid", "email"]
+    },
+    "Meal": {
+      "title": "Logged Meal",
+      "description": "A single meal logged by the user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique meal ID." },
+        "name": { "type": "string", "description": "Name of the food item." },
+        "timestamp": { "type": "integer", "description": "Timestamp of when the meal was logged." }
+      },
+      "required": ["id", "name", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile document."
+    },
+    "/users/{userId}/meals/{mealId}": {
+      "schema": "Meal",
+      "description": "A meal in the user's daily log."
+    }
+  }
+}

@@ -1,0 +1,113 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: /users/{userId}
+    // Document ID: userId (string)
+    // Fields:
+    //   - uid: string (required) - User's unique ID
+    //   - email: string (required) - User's email address
+    //   - displayName: string (optional) - User's display name
+    //   - photoURL: string (optional) - User's photo URL
+    //   - profile: string (optional) - Health profile (enum)
+    //   - language: string (optional) - Preferred language (enum)
+    //   - age: string (optional) - User's age
+    //   - weight: string (optional) - User's weight
+    //   - activity: string (optional) - Activity level (enum)
+    //   - updatedAt: string (optional) - Last update timestamp
+    //
+    // Collection: /users/{userId}/meals/{mealId}
+    // Document ID: mealId (string)
+    // Fields:
+    //   - id: string (required) - Unique meal ID
+    //   - name: string (required) - Name of the food item
+    //   - timestamp: int (required) - Timestamp of when the meal was logged
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "fahad.ansari1907@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidProfile(profile) {
+      return profile in ['none', 'diabetes', 'hypertension', 'gluten-free', 'weight-loss'];
+    }
+
+    function isValidLanguage(lang) {
+      return lang in ['english', 'hindi', 'marathi', 'tamil', 'bengali'];
+    }
+
+    function isValidActivity(activity) {
+      return activity in ['low', 'moderate', 'high'];
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email']) &&
+             data.uid is string && data.uid.size() > 0 && data.uid.size() < 128 &&
+             data.email is string && isValidEmail(data.email) &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() < 100)) &&
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() < 500)) &&
+             (!('profile' in data) || isValidProfile(data.profile)) &&
+             (!('language' in data) || isValidLanguage(data.language)) &&
+             (!('age' in data) || (data.age is string && data.age.size() < 5)) &&
+             (!('weight' in data) || (data.weight is string && data.weight.size() < 5)) &&
+             (!('activity' in data) || isValidActivity(data.activity)) &&
+             (!('updatedAt' in data) || data.updatedAt is string);
+    }
+
+    function isValidMeal(data) {
+      return data.keys().hasAll(['id', 'name', 'timestamp']) &&
+             data.id is string && data.id.size() > 0 && data.id.size() < 128 &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
+             data.timestamp is int;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && (!('role' in request.resource.data) || isAdmin());
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+
+      match /meals/{mealId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidMeal(request.resource.data);
+        allow update: if isOwner(userId) && isValidMeal(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

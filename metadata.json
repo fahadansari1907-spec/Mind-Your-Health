@@ -1,0 +1,5 @@
+{
+  "name": "Mind Your Health",
+  "description": "AI-powered health assistant that analyzes food products from text or images to provide simple nutritional insights and healthier alternatives.",
+  "requestFramePermissions": ["camera", "geolocation", "microphone"]
+}
