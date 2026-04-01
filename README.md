@@ -2,7 +2,8 @@
 
 **Mind Your Health** is a professional-grade, AI-powered nutritional companion designed to help you make smarter food choices in seconds. Using Google's Gemini AI, it analyzes food images, voice descriptions, and text inputs to provide deep nutritional insights, macro tracking, and personalized health plans.
 
-![App Preview](https://picsum.photos/seed/health/1200/600)
+![App Preview]<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/9042c4ca-4c76-4c1c-9362-1a12e2e988d5" />
+
 
 ## 🚀 Key Features
 
